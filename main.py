@@ -4,7 +4,7 @@ import random
 
 from modules.stars_functions import blink
 from modules.fire_functions import fire
-from modules.ship_functions import animate_frames, update_position
+from modules.ship_functions import animate_frames, update_position, get_frame_size
 
 
 KEY_CODES = {
@@ -21,19 +21,24 @@ def draw(canvas):
     canvas.nodelay(True)
     canvas.box()
 
-    row, column = (10, 159)
-    symbols = '+*.:'
-    coroutines_stars = []
     frame_files = [
         'frames/rocket_frame_1.txt',
         'frames/rocket_frame_2.txt',
     ]
+
+    with open(frame_files[0], 'r') as file:
+        image = file.read()
+
+    row, column = canvas.getmaxyx()
+    ship_height, ship_width = get_frame_size(image)
+    symbols = '+*.:'
+    coroutines_stars = []
     ship_pos = {
-        'row': 1,
-        'col': 78
+        'row': (row - ship_height) / 2,
+        'col': (column - ship_width) / 2,
     }
 
-    for star in range(60):
+    for star in range(100):
         coroutines_stars.append(
             blink(
                 canvas,
@@ -43,7 +48,7 @@ def draw(canvas):
             )
         )
 
-    coroutine_fire = fire(canvas, 10, 80)
+    coroutine_fire = fire(canvas, row-1, column/2)
     coroutine_ship = animate_frames(canvas, ship_pos, frame_files)
     coroutine_ship_move = update_position(canvas, ship_pos, frame_files, KEY_CODES)
 
