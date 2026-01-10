@@ -29,7 +29,7 @@ def draw_frame(canvas, start_row, start_column, text, negative=True):
 
 
 async def animate_frames(canvas, ship_pos, frame_files):
-    await asyncio.sleep(6)
+    await asyncio.sleep(10)
     while True:
         row = ship_pos['row']
         col = ship_pos['col']
