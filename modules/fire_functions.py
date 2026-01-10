@@ -8,10 +8,10 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.4, columns_speed=0
     await asyncio.sleep(0.1)
 
     canvas.addstr(round(row), round(column), 'O')
-    await asyncio.sleep(0.9)
+    await asyncio.sleep(0.8)
 
     canvas.addstr(round(row), round(column), ' ')
-    await asyncio.sleep(0.8)
+    await asyncio.sleep(0.1)
 
     row += rows_speed
     column += columns_speed
