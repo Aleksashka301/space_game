@@ -1,10 +1,10 @@
-import asyncio
 import curses
 import random
+import time
 
 from modules.stars_functions import blink
 from modules.fire_functions import fire
-from modules.ship_functions import animate_frames, update_position, get_frame_size
+from modules.ship_functions import get_frame_size, ship_controller
 
 
 KEY_CODES = {
@@ -14,6 +14,7 @@ KEY_CODES = {
     'UP_KEY_CODE': 259,
     'DOWN_KEY_CODE': 258,
 }
+TIC_TIMEOUT = 0.1
 
 
 def draw(canvas):
@@ -49,18 +50,22 @@ def draw(canvas):
         )
 
     coroutine_fire = fire(canvas, row-1, column/2)
-    coroutine_ship = animate_frames(canvas, ship_pos, frame_files)
-    coroutine_ship_move = update_position(canvas, ship_pos, frame_files, KEY_CODES)
+    coroutine_ship = ship_controller(canvas, ship_pos, frame_files, KEY_CODES)
 
-    async def start_game():
-        await asyncio.gather(
-            *coroutines_stars,
-            coroutine_fire,
-            coroutine_ship,
-            coroutine_ship_move,
-        )
+    coroutines = []
+    coroutines.extend(coroutines_stars)
+    coroutines.append(coroutine_fire)
+    coroutines.append(coroutine_ship)
 
-    asyncio.run(start_game())
+    while coroutines:
+        for coroutine in coroutines.copy():
+            try:
+                coroutine.send(None)
+            except StopIteration:
+                coroutines.remove(coroutine)
+
+        time.sleep(TIC_TIMEOUT)
+        canvas.refresh()
 
 
 if __name__ == '__main__':

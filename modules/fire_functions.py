@@ -5,13 +5,16 @@ import curses
 async def fire(canvas, start_row, start_column, rows_speed=-0.4, columns_speed=0):
     row, column = start_row, start_column
     canvas.addstr(round(row), round(column), '*')
-    await asyncio.sleep(0.1)
+    for _ in range(1):
+        await asyncio.sleep(0)
 
     canvas.addstr(round(row), round(column), 'O')
-    await asyncio.sleep(0.8)
+    for _ in range(8):
+        await asyncio.sleep(0)
 
     canvas.addstr(round(row), round(column), ' ')
-    await asyncio.sleep(0.1)
+    for _ in range(1):
+        await asyncio.sleep(0)
 
     row += rows_speed
     column += columns_speed
@@ -22,7 +25,8 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.4, columns_speed=0
 
     while 0 < row < max_row and 0 < column < max_column:
         canvas.addstr(round(row), round(column), symbol)
-        await asyncio.sleep(0.1)
+        for _ in range(1):
+            await asyncio.sleep(0)
 
         canvas.addstr(round(row), round(column), ' ')
         row += rows_speed

@@ -28,24 +28,6 @@ def draw_frame(canvas, start_row, start_column, text, negative=True):
             canvas.addch(row, column, symbol)
 
 
-async def animate_frames(canvas, ship_pos, frame_files):
-    await asyncio.sleep(10)
-    while True:
-        row = ship_pos['row']
-        col = ship_pos['col']
-
-        for frame_path in frame_files:
-            with open(frame_path, 'r') as file:
-                image = file.read()
-
-            draw_frame(canvas, row, col, image, negative=False)
-            canvas.refresh()
-            await asyncio.sleep(0.3)
-
-            draw_frame(canvas, row, col, image, negative=True)
-            canvas.refresh()
-
-
 def read_controls(canvas, key_codes):
     rows_direction = columns_direction = 0
     space_pressed = False
@@ -74,30 +56,31 @@ def read_controls(canvas, key_codes):
     return rows_direction, columns_direction, space_pressed
 
 
-async def update_position(canvas, ship_pos, frame_files, key_codes):
-    with open(frame_files[0], 'r') as file:
-        image = file.read()
-
-    ship_height, ship_width = get_frame_size(image)
-    screen_height, screen_width = canvas.getmaxyx()
-
-    while True:
-        row, col, _ = read_controls(canvas, key_codes)
-        new_row = ship_pos['row'] + row
-        new_col = ship_pos['col'] + col
-
-        if 1 <= new_row <= screen_height - ship_height - 1:
-            ship_pos['row'] = new_row
-
-        if 1 <= new_col <= screen_width - ship_width - 1:
-            ship_pos['col'] = new_col
-
-        await asyncio.sleep(0.1)
-
-
 def get_frame_size(text):
     lines = text.splitlines()
     rows = len(lines)
     columns = max([len(line) for line in lines])
 
     return rows, columns
+
+
+async def ship_controller(canvas, ship_pos, frame_files, key_codes):
+    for _ in range(100):
+        await asyncio.sleep(0)
+
+    while True:
+        rows_dir, cols_dir, _ = read_controls(canvas, key_codes)
+        ship_pos['row'] += rows_dir
+        ship_pos['col'] += cols_dir
+
+        for frame in frame_files:
+            with open(frame, 'r') as file:
+                frame = file.read()
+
+            draw_frame(canvas, ship_pos['row'], ship_pos['col'], frame, negative=False)
+            canvas.refresh()
+            for _ in range(3):
+                await asyncio.sleep(0)
+
+            draw_frame(canvas, ship_pos['row'], ship_pos['col'], frame, negative=True)
+            canvas.refresh()

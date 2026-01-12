@@ -4,20 +4,26 @@ import random
 
 
 async def blink(canvas, row, column, symbol='*'):
-    await asyncio.sleep(random.choice(range(3)))
+    for _ in range(random.randint(1, 31)):
+        await asyncio.sleep(0)
+
     while True:
         canvas.addstr(row, column, symbol, curses.A_DIM)
         canvas.refresh()
-        await asyncio.sleep(1.8)
+        for _ in range(18):
+            await asyncio.sleep(0)
 
         canvas.addstr(row, column, symbol)
         canvas.refresh()
-        await asyncio.sleep(0.2)
+        for _ in range(2):
+            await asyncio.sleep(0)
 
         canvas.addstr(row, column, symbol, curses.A_BOLD)
         canvas.refresh()
-        await asyncio.sleep(0.4)
+        for _ in range(4):
+            await asyncio.sleep(0)
 
         canvas.addstr(row, column, symbol)
         canvas.refresh()
-        await asyncio.sleep(0.2)
+        for _ in range(2):
+            await asyncio.sleep(0)
