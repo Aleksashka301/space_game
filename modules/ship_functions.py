@@ -68,10 +68,21 @@ async def ship_controller(canvas, ship_pos, frame_files, key_codes):
     for _ in range(100):
         await asyncio.sleep(0)
 
+    with open(frame_files[0], 'r') as file:
+        image = file.read()
+    ship_height, ship_width = get_frame_size(image)
+
     while True:
         rows_dir, cols_dir, _ = read_controls(canvas, key_codes)
-        ship_pos['row'] += rows_dir
-        ship_pos['col'] += cols_dir
+        screen_height, screen_width = canvas.getmaxyx()
+        new_row = ship_pos['row'] + rows_dir
+        new_col = ship_pos['col'] + cols_dir
+
+        if 1 <= new_row <= screen_height - ship_height - 1:
+            ship_pos['row'] = new_row
+
+        if 1 <= new_col <= screen_width - ship_width - 1:
+            ship_pos['col'] = new_col
 
         for frame in frame_files:
             with open(frame, 'r') as file:
