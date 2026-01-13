@@ -14,7 +14,7 @@ KEY_CODES = {
     'UP_KEY_CODE': 259,
     'DOWN_KEY_CODE': 258,
 }
-TIC_TIMEOUT = 0.1
+TIC_TIMEOUT = 0.05
 
 
 def draw(canvas):
@@ -35,8 +35,8 @@ def draw(canvas):
     symbols = '+*.:'
     coroutines_stars = []
     ship_pos = {
-        'row': (row - ship_height) / 2,
-        'col': (column - ship_width) / 2,
+        'row': round((row - ship_height) / 2),
+        'col': round((column - ship_width) / 2),
     }
 
     for star in range(100):
