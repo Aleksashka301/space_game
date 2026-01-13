@@ -65,15 +65,24 @@ def get_frame_size(text):
 
 
 async def ship_controller(canvas, ship_pos, frame_files, key_codes):
-    with open(frame_files[0], 'r') as file:
-        image = file.read()
-    ship_height, ship_width = get_frame_size(image)
+    frames = []
+
+    for frame_file in frame_files:
+        with open(frame_file, 'r') as file:
+            frames.append(file.read())
+
+    ship_height, ship_width = get_frame_size(frames[0])
+    frame_index = 0
+    animation_counter = 0
 
     while True:
+        old_row, old_col = ship_pos['row'], ship_pos['col']
         rows_dir, cols_dir, _ = read_controls(canvas, key_codes)
         screen_height, screen_width = canvas.getmaxyx()
-        new_row = ship_pos['row'] + rows_dir
-        new_col = ship_pos['col'] + cols_dir
+        new_row = old_row + rows_dir
+        new_col = old_col + cols_dir
+
+        draw_frame(canvas, old_row, old_col, frames[frame_index], negative=True)
 
         if 1 <= new_row <= screen_height - ship_height - 1:
             ship_pos['row'] = new_row
@@ -81,13 +90,15 @@ async def ship_controller(canvas, ship_pos, frame_files, key_codes):
         if 1 <= new_col <= screen_width - ship_width - 1:
             ship_pos['col'] = new_col
 
-        for frame in frame_files:
-            with open(frame, 'r') as file:
-                frame = file.read()
+        animation_counter += 1
+        if animation_counter >= 6:
+            draw_frame(canvas, ship_pos['row'], ship_pos['col'], frames[frame_index], negative=True)
 
-            draw_frame(canvas, ship_pos['row'], ship_pos['col'], frame, negative=False)
-            canvas.refresh()
-            for _ in range(3):
-                await asyncio.sleep(0)
+            frame_index = (frame_index + 1) % len(frames)
+            animation_counter = 0
 
-            draw_frame(canvas, ship_pos['row'], ship_pos['col'], frame, negative=True)
+        draw_frame(canvas, ship_pos['row'], ship_pos['col'], frames[frame_index], negative=False)
+        canvas.refresh()
+
+        await asyncio.sleep(0)
+
