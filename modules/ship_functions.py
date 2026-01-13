@@ -65,9 +65,6 @@ def get_frame_size(text):
 
 
 async def ship_controller(canvas, ship_pos, frame_files, key_codes):
-    for _ in range(100):
-        await asyncio.sleep(0)
-
     with open(frame_files[0], 'r') as file:
         image = file.read()
     ship_height, ship_width = get_frame_size(image)
@@ -94,4 +91,3 @@ async def ship_controller(canvas, ship_pos, frame_files, key_codes):
                 await asyncio.sleep(0)
 
             draw_frame(canvas, ship_pos['row'], ship_pos['col'], frame, negative=True)
-            canvas.refresh()
