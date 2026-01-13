@@ -45,6 +45,7 @@ def draw(canvas):
                 canvas,
                 random.choice(range(1, row)),
                 random.choice(range(1, column)),
+                random.choice(range(1, 31)),
                 random.choice(symbols),
             )
         )
