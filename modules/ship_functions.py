@@ -81,6 +81,7 @@ async def ship_controller(canvas, ship_pos, frame_files, key_codes):
         screen_height, screen_width = canvas.getmaxyx()
         new_row = old_row + rows_dir
         new_col = old_col + cols_dir
+        tics_frame_change = 6
 
         draw_frame(canvas, old_row, old_col, frames[frame_index], negative=True)
 
@@ -91,14 +92,12 @@ async def ship_controller(canvas, ship_pos, frame_files, key_codes):
             ship_pos['col'] = new_col
 
         animation_counter += 1
-        if animation_counter >= 6:
+        if animation_counter >= tics_frame_change:
             draw_frame(canvas, ship_pos['row'], ship_pos['col'], frames[frame_index], negative=True)
 
             frame_index = (frame_index + 1) % len(frames)
             animation_counter = 0
 
         draw_frame(canvas, ship_pos['row'], ship_pos['col'], frames[frame_index], negative=False)
-        canvas.refresh()
-
         await asyncio.sleep(0)
 
