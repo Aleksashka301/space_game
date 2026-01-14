@@ -15,6 +15,7 @@ KEY_CODES = {
     'DOWN_KEY_CODE': 258,
 }
 TIC_TIMEOUT = 0.05
+TICS_PER_SECOND = 10
 
 
 def draw(canvas):
@@ -39,18 +40,21 @@ def draw(canvas):
         'col': round((column - ship_width) / 2),
     }
 
-    for star in range(100):
+    number_stars = 100
+    max_tics_offset = 31
+    for star in range(number_stars):
         coroutines_stars.append(
             blink(
                 canvas,
                 random.choice(range(1, row)),
                 random.choice(range(1, column)),
-                random.choice(range(1, 31)),
+                random.choice(range(1, max_tics_offset)),
+                TICS_PER_SECOND,
                 random.choice(symbols),
             )
         )
 
-    coroutine_fire = fire(canvas, row-1, column/2)
+    coroutine_fire = fire(canvas, row-1, column/2, TICS_PER_SECOND)
     coroutine_ship = ship_controller(canvas, ship_pos, frame_files, KEY_CODES)
 
     coroutines = []
