@@ -2,20 +2,11 @@ import curses
 import random
 import time
 
-from modules.stars_functions import blink
-from modules.fire_functions import fire
-from modules.ship_functions import get_frame_size, ship_controller
-
-
-KEY_CODES = {
-    'SPACE_KEY_CODE': 32,
-    'LEFT_KEY_CODE': 260,
-    'RIGHT_KEY_CODE': 261,
-    'UP_KEY_CODE': 259,
-    'DOWN_KEY_CODE': 258,
-}
-TIC_TIMEOUT = 0.05
-TICS_PER_SECOND = 10
+from modules.animations import blink
+from modules.controls import ship_controller
+from modules.frames import get_frame_size
+from modules.global_var import KEY_CODES, TIC_TIMEOUT, TICS_PER_SECOND
+from modules.objects import fill_orbit_with_garbage
 
 
 def draw(canvas):
@@ -23,21 +14,26 @@ def draw(canvas):
     canvas.nodelay(True)
     canvas.box()
 
-    frame_files = [
-        'frames/rocket_frame_1.txt',
-        'frames/rocket_frame_2.txt',
+    frames_ship = [
+        'frames/ship/rocket_frame_1.txt',
+        'frames/ship/rocket_frame_2.txt',
+    ]
+    frames_garbage = [
+        'frames/garbage/trash_large.txt',
+        'frames/garbage/trash_small.txt',
+        'frames/garbage/trash_xl.txt',
     ]
 
-    with open(frame_files[0], 'r') as file:
-        image = file.read()
+    with open(frames_ship[0], 'r') as file:
+        ship_image = file.read()
 
     row, column = canvas.getmaxyx()
-    ship_height, ship_width = get_frame_size(image)
+    ship_height, ship_width = get_frame_size(ship_image)
     symbols = '+*.:'
     coroutines_stars = []
     ship_pos = {
-        'row': round((row - ship_height) / 2),
-        'col': round((column - ship_width) / 2),
+        'row': (row - ship_height) // 2,
+        'col': (column - ship_width) // 2,
     }
 
     number_stars = 100
@@ -54,13 +50,10 @@ def draw(canvas):
             )
         )
 
-    coroutine_fire = fire(canvas, row-1, column/2, TICS_PER_SECOND)
-    coroutine_ship = ship_controller(canvas, ship_pos, frame_files, KEY_CODES)
-
     coroutines = []
     coroutines.extend(coroutines_stars)
-    coroutines.append(coroutine_fire)
-    coroutines.append(coroutine_ship)
+    coroutines.append(ship_controller(canvas, ship_pos, frames_ship, KEY_CODES, coroutines))
+    coroutines.append(fill_orbit_with_garbage(canvas, frames_garbage, column, coroutines))
 
     while coroutines:
         for coroutine in coroutines.copy():

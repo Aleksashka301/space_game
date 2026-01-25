@@ -1,31 +1,10 @@
 import asyncio
 
-
-def draw_frame(canvas, start_row, start_column, text, negative=True):
-    rows_number, columns_number = canvas.getmaxyx()
-
-    for row, line in enumerate(text.splitlines(), round(start_row)):
-        if row < 0:
-            continue
-
-        if row >= rows_number:
-            break
-
-        for column, symbol in enumerate(line, round(start_column)):
-            if column < 0:
-                continue
-
-            if column >= columns_number:
-                break
-
-            if symbol == ' ':
-                continue
-
-            if row == rows_number - 1 and column == columns_number - 1:
-                continue
-
-            symbol = symbol if not negative else ' '
-            canvas.addch(row, column, symbol)
+from modules.animations import fire, obstacles
+from modules.frames import draw_frame, get_frame_size
+from modules.game_scenario import show_gameover
+import modules.objects as year
+from modules.physics import update_speed
 
 
 def read_controls(canvas, key_codes):
@@ -56,15 +35,7 @@ def read_controls(canvas, key_codes):
     return rows_direction, columns_direction, space_pressed
 
 
-def get_frame_size(text):
-    lines = text.splitlines()
-    rows = len(lines)
-    columns = max([len(line) for line in lines])
-
-    return rows, columns
-
-
-async def ship_controller(canvas, ship_pos, frame_files, key_codes):
+async def ship_controller(canvas, ship_pos, frame_files, key_codes, coroutines):
     frames = []
 
     for frame_file in frame_files:
@@ -75,13 +46,25 @@ async def ship_controller(canvas, ship_pos, frame_files, key_codes):
     frame_index = 0
     animation_counter = 0
 
+    row_speed = 0.0
+    col_speed = 0.0
+
     while True:
         old_row, old_col = ship_pos['row'], ship_pos['col']
-        rows_dir, cols_dir, _ = read_controls(canvas, key_codes)
+        rows_dir, cols_dir, shot = read_controls(canvas, key_codes)
+
+        if year.year >= 2020 and shot:
+            coroutines.append(run_spaceship(canvas, old_col, ship_width, ship_pos))
+
+        row_speed, col_speed = update_speed(
+            row_speed=row_speed,
+            column_speed=col_speed,
+            rows_direction=rows_dir,
+            columns_direction=cols_dir,
+        )
         screen_height, screen_width = canvas.getmaxyx()
-        new_row = old_row + rows_dir
-        new_col = old_col + cols_dir
-        tics_frame_change = 6
+        new_row = old_row + row_speed
+        new_col = old_col + col_speed
 
         draw_frame(canvas, old_row, old_col, frames[frame_index], negative=True)
 
@@ -91,7 +74,14 @@ async def ship_controller(canvas, ship_pos, frame_files, key_codes):
         if 1 <= new_col <= screen_width - ship_width - 1:
             ship_pos['col'] = new_col
 
+        for collider in obstacles:
+            if collider.has_collision(
+                    ship_pos['row'], ship_pos['col'], obj_size_rows=ship_height, obj_size_columns=ship_width
+            ):
+                return show_gameover(canvas, screen_height, screen_width)
+
         animation_counter += 1
+        tics_frame_change = 6
         if animation_counter >= tics_frame_change:
             draw_frame(canvas, ship_pos['row'], ship_pos['col'], frames[frame_index], negative=True)
 
@@ -101,3 +91,7 @@ async def ship_controller(canvas, ship_pos, frame_files, key_codes):
         draw_frame(canvas, ship_pos['row'], ship_pos['col'], frames[frame_index], negative=False)
         await asyncio.sleep(0)
 
+
+async def run_spaceship(canvas, old_col, ship_width, ship_pos):
+    fire_col = old_col + (ship_width // 2)
+    await fire(canvas, ship_pos['row'], fire_col, 10)
